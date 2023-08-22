@@ -1,0 +1,910 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  12,
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Hourly vs.~Daily Pollution Modelling Strategies in Epidemiological Studies: Evaluating the Performance for Estimating Daily Pollution Exposure},
+  pdfauthor={Guowen Huang},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\usepackage{subcaption}
+\makeatletter\@ifundefined{subfloat}{\newcommand{\subfloat}[2][need a sub-caption]{\subcaptionbox{#1}{#2}\, }}{ \renewcommand{\subfloat}[2][need a sub-caption]{ \subcaptionbox{#1}{#2}\, }}\makeatother
+\usepackage{xcolor}
+\usepackage{setspace}\doublespacing
+\usepackage{float}
+\usepackage[a4paper,width=15cm, lines=26, left=3cm ]{geometry}
+
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage[style=authoryear,backend=biber,maxbibnames = 20,maxcitenames
+= 2,doi = false,isbn = false,giveninits = true,uniquelist =
+false]{biblatex}
+\addbibresource{thebib.bib}
+
+\title{Hourly vs.~Daily Pollution Modelling Strategies in
+Epidemiological Studies\(:\) Evaluating the Performance for Estimating
+Daily Pollution Exposure}
+\author{Guowen Huang}
+%\date{13th June 2023}
+
+\begin{document}
+\maketitle
+
+\hypertarget{abstract}{%
+\subsection*{Abstract}\label{abstract}}
+\addcontentsline{toc}{subsection}{Abstract}
+
+Epidemiological studies have consistently demonstrated the association
+between daily pollution exposure and disease outcomes. To estimate daily
+exposure, hourly pollution data are commonly aggregated, but missing
+data pose a significant challenge to this approach. To overcome this
+issue, some researchers develop models to impute missing hourly data.
+Alternatively, daily modelling of pollution exposure can be directly
+performed, thereby avoiding the computational burden of hourly pollution
+modelling. However, the performance of these two modelling strategies
+remains unclear. This paper aims to compare the performance of hourly
+and daily modelling strategies in estimating daily pollution exposure.
+We hypothesize that daily pollution modelling may provide comparable
+results to hourly pollution modelling while saving computation time. We
+will use data from Guangzhou city to compare the performance of both
+approaches. Results from this study could help researchers decide which
+modelling approach to use in future studies, thus improving the
+efficiency of pollution exposure estimation in epidemiological studies.
+
+\hypertarget{keywords}{%
+\subsection*{Keywords}\label{keywords}}
+\addcontentsline{toc}{subsection}{Keywords}
+
+Bayesian hierarchical model; exposure estimation; MCMC; Stan
+
+\hypertarget{author-information}{%
+\subsection*{Author information}\label{author-information}}
+\addcontentsline{toc}{subsection}{Author information}
+
+\(^1\) Department of Mathematics, Shantou University, Guangdong 515063,
+P.R.China
+
+\(^*\) Corresponding author: E-mail: guowenhuang@stu.edu.cn
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+Air pollution is a critical global issue with severe health
+consequences. Extensive epidemiological studies have linked daily
+pollution exposure to adverse health outcomes, focusing on particulate
+matter (PM\(_{2.5}\), PM\(_{10}\)), nitrogen dioxide (NO\(_2\)), and
+ozone (O\(_3\)). These pollutants have been extensively studied due to
+their prevalence in the atmosphere and associations with respiratory and
+cardiovascular diseases, as well as premature mortality among the
+elderly. Over the past few decades, recognition of air pollution as a
+worldwide problem has led to a proliferation of epidemiological
+research, estimating the health impact of outdoor air pollution.
+
+PM\(_{10}\) represents the particulate matter with a diameter of 10
+\(\mu m\) or less originates mainly from combustion in domestic heating,
+industries, agriculture, and road transport. PM\(_{2.5}\) represents the
+particulate matter with a diameter of 2.5 \(\mu m\) or less primarily
+comes from combustion in domestic heating, industries, and road
+transport. It is also influenced by natural sources and atmospheric
+transformations, with agricultural ammonia emissions playing a
+significant role. NO\(_2\) is primarily emitted by road transport,
+particularly in densely populated areas. Combustion processes in
+industries and the energy sector are additional sources of NO\(_2\)
+emissions. O\(_3\) is a secondary pollutant formed when nitrogen oxides
+and volatile organic compounds react under heat and sunlight.
+Anthropogenic sources, including industries, energy production,
+transportation, and biogenic sources, contribute to O\(_3\) formation.
+
+A report from the World Health Organization (WHO) claimed that 99\% of
+the world population was living in places where the WHO air quality
+guidelines levels were not met in 2019, and ambient (outdoor) air
+pollution in both cities and rural areas was estimated to cause 4.2
+million premature deaths worldwide in 2016 \autocite{WHO2021}. According
+to European Environment Agency \autocite{EEA2021}, in 2019, air
+pollution continued to drive a significant burden of premature death and
+disease in the 27 EU Member States: 307,000 premature deaths were
+attributed to chronic exposure to PM\(_{2.5}\); 40,400 premature deaths
+were attributed to chronic NO\(_2\) exposure; 16,800 premature deaths
+were attributed to acute O\(_3\) exposure. The adverse human health
+effects associated with exposures to air pollutants have been well
+documented. For example, mortality from respiratory and heart diseases
+was significantly related to the level of air pollution \autocites[see
+e.g.,][]{Hoek2013,Hodgson1970}, while all-cause mortality was found to
+be significantly associated with O\(_3\) levels \autocites[see
+e.g.,][]{Huang2022,Anderson1996}. A recent study from by
+\textcite{Zhang2021} found that long-term exposure to PM\(_{2.5}\) and
+NO\(_2\) was associated with increased risks for non-accidental,
+cardiovascular, and respiratory mortality. The significance of
+accurately estimating pollution exposure in epidemiological studies is
+emphasized by these findings. By doing so, we can gain a better
+understanding of the health effects of air pollution. Furthermore, these
+findings suggest that there may be potential advantages in improving air
+quality.
+
+When estimating short-term air pollution effects, daily counts of
+disease cases are often regressed against air pollution concentrations
+on the preceding few days, utilizing either an ecological (at the
+population level) time series design \autocites[see
+e.g.,][]{Zhou2021,Krall2013,Gouveia2000} or a case-crossover design
+\autocites[see e.g.,][]{Lavigne2022,Liu2019,Di2017,Wing2017}. However,
+pollution data are usually hourly monitoring observations with missing
+values due to technical problems or equipment malfunctions. To overcome
+this issue, hourly pollution data are commonly aggregated to daily data
+by taking the mean of hourly values. However, this approach assumes that
+the hourly data are missing at random, which may not be true.
+Alternatively, some researchers have developed various pollution models
+to impute missing hourly data, such as the kriging interpolation method
+\autocite{Cressie1993}, the artificial neural network method
+\autocite[see e.g.,][]{Cordova2021}, and the univariate or multivariate
+time-series imputations \autocite{Hadeed2020}. These models have been
+shown to improve the estimation of daily pollution exposure compared to
+simple daily averaging.
+
+An alternative approach to estimating daily pollution exposure in the
+presence of missing data is to directly model pollution exposure on a
+daily basis, which avoids the computational challenges of hourly
+pollution modelling. daily pollution modelling entails estimating
+pollution concentrations for each day using existing monitoring data and
+additional information like meteorological data and land-use
+characteristics. This approach offers the benefit of streamlining the
+modelling process and minimizing the uncertainty associated with
+imputing missing data. However, it may overlook potential fluctuations
+in pollution concentrations within a day, resulting in biased estimates
+of exposure.
+
+Despite the potential advantages and disadvantages of these two
+modelling strategies, the performance of hourly and daily modelling
+strategies in estimating pollution exposure remains unclear. In this
+paper, we aim to compare the performance of hourly and daily modelling
+strategies in estimating daily pollution exposure, using data from
+Guangzhou city. We hypothesize that daily pollution modelling may
+provide comparable results to hourly pollution modelling while saving
+computation time. The results of this study will have important
+implications for epidemiological studies of air pollution exposure. By
+identifying the strengths and weaknesses of hourly and daily modelling
+strategies, we can help researchers decide which approach to use in
+future studies. This will improve the efficiency of pollution exposure
+estimation in epidemiological studies and enhance our understanding of
+the health impacts of air pollution. Additionally, our findings may
+inform the development of new methods for estimating pollution exposure
+that combine the strengths of hourly and daily modelling strategies.
+
+\hypertarget{methodology}{%
+\section{Methodology}\label{methodology}}
+
+\hypertarget{related-work}{%
+\subsection{Related work}\label{related-work}}
+
+The main sources of air pollution data in epidemiological studies
+include: (a) Monitoring Stations, which are strategically located in
+various urban and rural areas to measure pollutant concentrations in the
+ambient air; (b) Satellite Observations, where satellite-based remote
+sensing is utilized to monitor air pollution on a larger spatial scale;
+(c) modelling and Simulation, where air pollution models use
+mathematical algorithms and computer simulations to estimate pollutant
+concentrations based on emission inventories, meteorological data, and
+other relevant factors.
+
+For the purpose of this study, our focus is on addressing missing data
+specifically from source (a), which refers to the monitoring stations.
+To handle this issue, researchers commonly assume missing at random
+\autocite[MAR, see e.g.,][]{Little2019} which is frequently encountered
+in environmental health sciences studies, and employ two main techniques
+\autocite{Hadeed2020}: univariate time-series and multivariate
+time-series methods. These approaches have been extensively utilized to
+impute missing data in monitoring observations. Univariate time-series
+imputation refers to a class of techniques employed in air pollution
+studies to address the temporal characteristics of real-time monitoring
+data \autocite{Moritz2015}. One commonly used method is the last
+observation carried forward (LOCF), which fills gaps of missing data by
+using the most recent observed value \autocite{Engels2003,Plaia2006}. By
+employing univariate time-series methods, researchers can estimate
+missing values by considering the historical trends and patterns within
+the specific pollutant's time series. These techniques utilize the
+available data points to predict and fill in the gaps. In contrast,
+multivariate time-series imputation involves more sophisticated
+techniques that take into account multiple variables and their
+interactions. By leveraging the relationships between various pollutants
+and environmental factors, these methods can better estimate missing
+data points based on the available information. Some commonly employed
+methods in this category include regression imputation and predictive
+mean matching \autocites[PMM, see e.g.,][]{Rubin1986,Little1988}, row
+mean method \autocite[RMM, see e.g.,][]{Engels2003} , multiple
+imputation chained equations \autocite[MICE, see e.g.,][]{Rubin1988} and
+random imputation \autocite{Moritz2015}.
+
+In a recent study, \textcite{Huang2022} proposed a novel multivariate
+time-series model that uses a Bayesian framework to impute hourly
+missing pollution data. The response is a mixture of Gamma and
+Half-Cauchy distributions, and the correlations between pollutants are
+allowed to vary seasonally. The imputation performance of this model is
+exceptional, and its source code is openly accessible, making it highly
+suitable for replication by other researchers. Leveraging this hourly
+pollution model as a basis for comparison in our study, we devised a
+novel daily pollution model. The aim of this study is to compare the
+performance of the hourly and daily pollution models to determine if the
+daily pollution model is sufficient, thus to avoid using the
+computationally expensive hourly pollution model. We will briefly
+describe the hourly pollution model here (more details can be found in
+\textcite{Huang2022}) before presenting our proposed daily pollution
+model.
+
+\hypertarget{hourly-pollution-model}{%
+\subsection{Hourly pollution model}\label{hourly-pollution-model}}
+
+The pollution measurements exhibit a non-negative and right-skewed
+distribution, which makes the Gamma distribution a suitable choice for
+representing the response variable. One key advantage of the Gamma
+distribution over the commonly used log-Normal distribution is that the
+sum of Gamma-distributed variables follows a Gamma distribution as well.
+This property plays a crucial role in the data reduction as discussed in
+\textcite{Huang2022}.
+
+Let's denote the measured variable for pollutant \(p\) at monitoring
+station \(s\) on hour \(h\) of day \(t\) as \(Y_{sthp}\). This variable
+can take two forms: either a clean data point following a Gamma
+distribution denoted as \(Y_{sthp}^{[\mbox{clean}]}\), or a contaminated
+observation with a scaled half-Cauchy distribution denoted as
+\(Y_{sthp}^{[\mbox{cont}]}\). Suspicious outliers in the pollution data
+include two types: occasional very high values and isolated zero values
+on days when all stations have non-zero measurements. The half-Cauchy
+distribution is used to accommodate the heavy right tail for the former
+outliers and a peak at zero for the latter outliers.
+
+To indicate whether each observation is clean or contaminated, an
+indicator variable \(Z_{sthp}\) is introduced. With this notation, the
+model can be expressed as follows:
+
+\begin{equation}\label{eqnPollutionhour}
+\begin{aligned}
+Y_{sthp} \mid Z_{sthp}  = & 
+\begin{cases}
+Y_{sthp}^{[\mbox{clean}]} &  Z_{sthp} =1 \\ 
+Y_{sthp}^{[\mbox{cont}]} & Z_{sthp}=0
+\end{cases} \\
+Y_{sthp}^{[\mbox{clean}]} \sim & \mbox{Gamma}
+\left( \alpha_p, \alpha_p / \lambda_{sthp} \right) \\
+Y_{sthp}^{[\mbox{cont}]} \sim & \mbox{Half-Cauchy}(\nu_{p})\\
+Z_{sthp} \sim & \mbox{Bern}(\rho_{pt})
+\end{aligned}
+\end{equation}
+
+The parameter \(\rho_{pt}\), representing the prevalence of
+`contaminated' observations, is dynamic and can vary over time to
+incorporate advancements in monitoring equipment or significant changes
+in the environment that may affect the occurrence of contaminated
+observations. These changes can result in an increase or decrease in the
+prevalence of contaminated observations. In our modelling approach, we
+consider \(\rho_{pt}\) to be piecewise-constant, with a single step
+occurring on 1st January 2020. This particular step point is selected to
+approximately align with the onset of the COVID-19 pandemic
+\autocite{who_timeline}, aiming to minimize potential bias that may
+arise due to the unique circumstances during that period.
+
+The clean measurements \(Y_{sthp}^{[\mbox{clean}]}\) follow a Gamma
+distribution characterized by shape parameters \(\alpha_p\) and mean
+values \(\lambda_{sthp}\). The means are modeled using a log-linear
+approach, as described below. 
+\begin{equation}\label{eqnPollutionhour2}
+	\begin{aligned}
+		\log{(\lambda_{sthp})}  = & \mathbf{X}_{th}^{\top}\mathbf{\psi}_{p} +Q_{sp}+ D_{tp} + C_{stp}\\
+		\mathbf{Q}_{s} \sim & \mbox{N}\left(\mathbf{0}, \Omega \right)\\
+		\mathbf{D}_{t}  \mid \mathbf{D}_{t-1}   \sim & \mbox{N}\left[\mbox{diag}(\mathbf{\phi})  \mathbf{D}_{t-1} ,\ \mathbf{\Sigma}_t \right]\\
+		\mathbf{C}_{st} \sim & \mbox{N}\left[\mathbf{0},\ \mbox{diag}(\mathbf{\gamma}) \mathbf{\Sigma}_t \mbox{diag}(\mathbf{\gamma}) \right] \\
+		\mathbf{\Sigma}_t  = &  \mbox{diag}(\mathbf{\delta}) \left[
+		\begin{array}{cccc}
+			&  &  &  \\
+			& \mathbf{\bar{L}}  &   &  {\mathbf{0}}  \\ 
+			&  &  &  \\
+			L_{t1} & \dots & L_{t,P-1}  &  L_{tP}
+		\end{array}\right] \left[
+		\begin{array}{cccc} 
+			&  &  &  L_{t1} \\
+			& \mathbf{\bar{L}}^{\top}  &   &  \dots  \\ 
+			&  &  & L_{t,P-1} \\
+			& {\mathbf{0}}^{\top} &   &  L_{tP}
+		\end{array}\right] \mbox{diag}(\mathbf{\delta}) \\
+		L_{tp}  = &  b_p + \mathbf{f}_t ^{\top}\mathbf{\eta}_p
+	\end{aligned}
+\end{equation}
+
+
+The covariates \(\mathbf{X}_{th}\) consist of sinusoidal functions that
+capture seasonality at frequencies of 6 and 12 months, indicator
+variables for each hour of the day, day-of-week indicators, and a linear
+time trend. The fixed effect coefficients \(\mathbf{\psi}_p\) are
+pollutant-specific. The hourly influence \(h\) on \(\lambda_{sthp}\) is
+solely represented through the hourly indicator variables in
+\(\mathbf{X}_{th}\). This approach offers computational advantages by
+reducing the dimensionality of the random effects.
+
+In addition to the fixed effects, \(\lambda_{sthp}\) includes three
+random effects that are multivariate with four dimensions, corresponding
+to each pollutant:
+
+\begin{itemize}
+    \tightlist
+    \item
+    $\mathbf{Q}_s$, a station-level random effect with covariance matrix
+    $\Omega$;
+    \item
+    $\mathbf{D}_t$, a first order vector autoregressive time trend with a
+    diagonal transition matrix $\mbox{diag}(\mathbf{\phi})$ and
+    seasonally varying covariance $\mathbf{\Sigma}_t$; 
+    \item
+    $\mathbf{C}_{st}$, temporally independent station-time interaction
+    effects, with a time-varying covariance matrix which is a rescaling of
+    $\mathbf{\Sigma}_t$.
+\end{itemize}
+
+The correlation between O\(_3\) and the other three pollutants exhibits
+seasonal variability, with a general positive correlation during summer
+and a negative correlation during winter \autocite{Huang2022}. The four
+pollutants, PM\(_{2.5}\), PM\(_{10}\), NO\(_2\), and O\(_3\), are
+arranged in a specific order. The last row and column of the covariance
+matrix \(\mathbf{\Sigma}_t\) represent the time-varying covariances
+between O\(_3\) and the other pollutants.
+
+To model the correlation structure among the first three pollutants
+(PM\(_{2.5}\), PM\(_{10}\), and NO\(_2\)), we utilize a three-by-three
+lower-triangular matrix \(\mathbf{\bar{L}}\). This matrix is derived from
+the Cholesky decomposition of the correlation matrix and involves three
+parameters that need to be estimated.
+
+The scalar-valued variable \(L_{tp}\) is influenced by intercept
+parameters \(b_p\) and four coefficients \(\mathbf{\eta}_p\). These
+coefficients are associated with sine and cosine functions with periods
+of 6 and 12 months, which are enclosed within the time-varying factor
+\(\mathbf{f}_t\). The specific form of \(L_{tp}\) depends on these
+parameters and captures the relationship between the pollutant
+concentrations.
+
+In summary, the model accounts for the seasonal variation in the
+correlation between O\(_3\) and the other pollutants by incorporating a
+time-varying covariance matrix \(\mathbf{\Sigma}_t\), a lower-triangular
+matrix \(\mathbf{\bar{L}}\) representing the correlation structure among
+the first three pollutants, and scalar-valued variables \(L_{tp}\).
+
+As the model is under a Bayesian framework, prior distributions are
+required for the model parameters, and we employ the same priors as used
+in \textcite{Huang2022}.
+
+\hypertarget{daily-pollution-model}{%
+\subsection{Daily pollution model}\label{daily-pollution-model}}
+
+For daily pollution model, the response variable
+\(Y_{tp}=\frac{\sum_s\sum_h Y_{sthp}}{\mid s \mid \cdot \mid h \mid}\)
+represents the daily average concentration of pollutant \(p\) on day
+\(t\). It is assumed to follow a Gamma distribution with shape parameter
+\(\alpha_p\) and scale parameter \(\alpha_p/\lambda_{tp}\).
+
+The log of the mean concentration, \(\log(\lambda_{tp})\), is modeled as
+a linear combination of covariates represented by \(\mathbf{X}_t\) and an
+additional term \(D_{tp}\). The covariates \(\mathbf{X}_t\) consist of
+sinusoidal functions that capture seasonality at frequencies of 6 and 12
+months, day-of-week indicators, and a linear time trend. The fixed
+effect coefficients \(\mathbf{\psi}_p\) are pollutant-specific.
+
+The term \(\mathbf{D}_t\) represents a random effect component that
+captures temporal dependencies. It follows a normal distribution with a
+mean determined by the previous day's value \(\mathbf{D}_{t-1}\)
+multiplied by the diagonal transition matrix
+\(\text{diag}(\mathbf{\phi})\), and a covariance matrix
+\(\mathbf{\Sigma}_t\). The covariance matrix \(\mathbf{\Sigma}_t\) is
+constructed the same as in the aforementioned hourly pollution model,
+accounting for the seasonal variation in the correlation between O\(_3\)
+and the other pollutants. \begin{equation}\label{eqnPollutiondaily}
+\begin{aligned}
+   Y_{tp} \sim & \mbox{Gamma}
+   \left( \alpha_p, \alpha_p / \lambda_{tp} \right) \\
+  \log{(\lambda_{tp})}  = & \mathbf{X}_{t}^{\top}\mathbf{\psi}_{p} + D_{tp} \\
+    \mathbf{D}_{t}  \mid \mathbf{D}_{t-1}   \sim & \mbox{N}\left[\mbox{diag}(\mathbf{\phi})  \mathbf{D}_{t-1} ,\ \mathbf{\Sigma}_t \right]\\
+\mathbf{\Sigma}_t  = &  \mbox{diag}(\mathbf{\delta}) \left[
+\begin{array}{cccc}
+ &  &  &  \\
+ & \mathbf{\bar{L}}  &   &  {\mathbf{0}}  \\ 
+  &  &  &  \\
+ L_{t1} & \dots & L_{t,P-1}  &  L_{tP}
+\end{array}\right] \left[
+\begin{array}{cccc}
+ &  &  &  L_{t1} \\
+ & \mathbf{\bar{L}}^{\top}  &   &  \dots  \\ 
+  &  &  & L_{t,P-1} \\
+  & {\mathbf{0}}^{\top} &   &  L_{tP}
+\end{array}\right] \mbox{diag}(\mathbf{\delta}) \\
+L_{tp}  = &  b_p + \mathbf{f}_t ^{\top}\mathbf{\eta}_p
+  \end{aligned}
+\end{equation}
+
+Since the model operates within a Bayesian framework, it necessitates
+the specification of prior distributions for the model parameters. To
+ensure consistency, we adopt the same priors that were utilized in the
+previously mentioned hourly pollution model.
+
+\hypertarget{study-region}{%
+\subsection{Study region}\label{study-region}}
+
+The study region is Guangzhou, also known as Canton, which is a vibrant
+metropolis located in southern China. There are totally 10 pollution
+monitoring stations across Guangzhou (see Figure \ref{fig:guangzhou}).
+Hourly pollution data from 2017 to 2022 were collected from
+\url{http://www.cnemc.cn/sssj/}, including PM\(_{2.5}\), PM\(_{10}\),
+NO\(_2\), and O\(_3\).
+
+Table \ref{tab:datasummary2} presents a comprehensive summary of the
+mean concentrations and missing data percentages for four pollutants
+(PM\(_{2.5}\), PM\(_{10}\), NO\(_2\), and O\(_3\)) across various
+stations. In the table, NO\(_2\) shows moderate to high mean
+concentrations across all stations, ranging from 22.16 to 48.76
+\(\mu g/m^{3}\). O\(_3\) exhibits relatively high mean concentrations,
+with values ranging from 49.37 to 63.30 \(\mu g/m^{3}\). PM\(_{10}\) and
+PM\(_{2.5}\) have lower mean concentrations compared to O\(_3\), varying
+from 37.19 to 55.07 \(\mu g/m^{3}\) for PM\(_{10}\) and from 24.24 to
+30.98 \(\mu g/m^{3}\) for PM\(_{2.5}\). The missing data percentages for
+all pollutants are generally low. PM\(_{10}\) has the highest missing
+percentage among the pollutants, with values ranging from 3.32\% to
+9.75\%. PM\(_{2.5}\) has relatively lower missing percentages, ranging
+from 1.06\% to 2.85\%.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\textwidth]{stationMap.png}
+  \caption{Pollutant concentrations in each monitoring stations in Guangzhou, with the mean concentrations across stations being 49, 28, 40, 54 $\mu g/m^{3}$ for PM$_{10}$, PM$_{2.5}$, NO$_2$ and O$_3$, respectively.}
+  \label{fig:guangzhou} 
+\end{figure}
+
+\begin{table}[h]
+
+\caption{\label{tab:datasummary2}The mean concentrations $\mu g/m^{3}$ and missing percentage (\%) by pollutant and station.}
+\centering
+\begin{tabular}[t]{lrrrrrrrr}\hline
+\multicolumn{1}{c}{\textbf{ }} & \multicolumn{4}{c}{\textbf{Mean concentrations}} & \multicolumn{4}{c}{\textbf{Missing percentage}} \\\hline
+Station & NO$_2$ & O$_3$ & PM$_{10}$ & PM$_{2.5}$ & NO$_2$ & O$_3$ & PM$_{10}$ & PM$_{2.5}$\\\hline
+1345A & 48.76 & 49.46 & 55.07 & 30.98 & 1.63 & 1.46 & 4.44 & 1.06\\
+1346A & 41.05 & 55.46 & 50.08 & 30.18 & 2.53 & 2.43 & 5.63 & 1.91\\
+1348A & 43.85 & 53.06 & 48.11 & 27.65 & 2.67 & 2.88 & 5.14 & 2.11\\
+1349A & 48.10 & 49.53 & 53.15 & 27.64 & 1.89 & 2.56 & 3.32 & 1.71\\
+1350A & 39.02 & 59.11 & 48.22 & 28.16 & 2.10 & 2.62 & 6.37 & 1.68\\
+1351A & 36.68 & 60.96 & 49.19 & 28.14 & 1.83 & 2.35 & 4.54 & 1.31\\
+1352A & 45.99 & 53.94 & 51.28 & 28.46 & 1.82 & 1.77 & 4.16 & 1.23\\
+1353A & 30.64 & 50.62 & 49.66 & 27.40 & 2.50 & 5.10 & 6.09 & 2.05\\
+1354A & 41.34 & 49.37 & 45.44 & 26.99 & 2.52 & 2.02 & 5.31 & 1.54\\
+1355A & 22.16 & 63.30 & 37.19 & 24.24 & 3.51 & 3.43 & 9.75 & 2.85\\\hline
+\end{tabular}
+\end{table}
+
+\hypertarget{study-design}{%
+\subsection{Study design}\label{study-design}}
+
+To compare the performance of the hourly pollution model and daily
+pollution model, we utilized hourly pollution data from 2017 to 2022 for
+Guangzhou city. The dataset consists of variables such as pollutant,
+station, value, and date. To facilitate the modelling process, we
+divided the dataset into two subsets: a training dataset used for model
+fitting and a validation dataset for evaluating model performance.
+
+The validation dataset was specifically designed to assess the model's
+performance under different missing data scenarios. We considered two
+distinct scenarios: (1) one-pollutant missing across all stations for 50
+random days, and (2) two-pollutants missing across all stations for 50
+random days. The dataset covered four pollutants: PM\(_{2.5}\),
+PM\(_{10}\), NO\(_2\), and O\(_3\). For the first scenario, we examined
+four distinct cases: (a) PM\(_{2.5}\) missing, (b) PM\(_{10}\) missing,
+(c) NO\(_2\) missing, and (d) O\(_3\) missing. In the second scenario,
+where two pollutants were missing across all stations, we analyzed six
+different cases, including (a) both PM\(_{2.5}\) and PM\(_{10}\)
+missing, (b) both PM\(_{2.5}\) and NO\(_2\) missing, and so on.
+
+By incorporating these diverse scenarios into the analysis, we conducted
+a comprehensive evaluation of the model's performance under various
+missing data situations. This approach allowed us to thoroughly examine
+the effectiveness of the predictive model and gain valuable insights
+into its applicability for pollutant analysis.
+
+\hypertarget{results}{%
+\section{Results}\label{results}}
+
+We employed the Stan software \autocite{stan} to obtain posterior
+samples from both the hourly and daily air pollution models. Stan's
+Hamiltonian Monte Carlo (HMC) algorithm demonstrates strong performance
+in terms of chain mixing and convergence. However, due to the
+algorithm's complexity, Stan can be computationally intensive. This
+becomes a particular concern in our application, as the dataset
+comprises a large number of hourly observations for four pollutants from
+multiple monitoring stations. In contrast, the proposed daily pollution
+model offers a substantial advantage in terms of computing time.
+Recognizing this, our study is motivated by the idea that if the daily
+pollution model provides sufficient accuracy, it would be preferable to
+utilize it instead of the more computationally demanding hourly
+pollution model. In our study, the time required to run a chain with
+1000 iterations for hourly pollution models are about 3-4 days, while it
+takes only about 1-2 hours for daily pollution models, using Intel(R)
+Core(TM) i9-9900K CPU @ 3.60GHz.
+
+Two parallel chains are run for each scenario case with each chain
+having 1000 iterations. The first 500 iterations are removed as the
+burn-in period, after which convergence has been assessed and confirmed
+by the \texttt{monitor} function in Stan.
+
+\hypertarget{model-parameter-estimation}{%
+\subsection{Model parameter
+estimation}\label{model-parameter-estimation}}
+
+The main results from fitting pollution models, including the estimates
+of unknown parameters, the posterior samples of seasonally varying
+correlations between pollutants, are presented in Table
+\ref{tab:pollutionModelImplementationboth} and Figure
+\ref{fig:varyingcov}, respectively. Overall, Table
+\ref{tab:pollutionModelImplementationboth} provides a comparison between
+the hourly and daily pollution models by presenting the posterior
+medians and 95\% credible intervals for various parameters. It is
+observed from Table \ref{tab:pollutionModelImplementationboth} that the
+temporal random effects \(D_{tp}\) and their corresponding
+autoregressive coefficient \(\phi_p\) exhibit similarities in both the
+hourly and daily pollution models. This similarity can be attributed to
+the fact that these effects are designed based on a daily unit rather
+than an hourly unit, emphasizing the association with days rather than
+individual hours. As expected, the coefficient of variation
+\(1/\sqrt\alpha_p\) is much smaller from the daily pollution model,
+since daily averages tend to have lower dispersion than hourly data.
+Moving to the second part of Table
+\ref{tab:pollutionModelImplementationboth}, which focuses on the hourly
+pollution model specifically. The estimates for \(\kappa_p\) indicate
+the variability in the random intercepts for each station \(s\) and
+pollutant \(p\). We observe that the estimates for \(\kappa_p\) vary
+across pollutants, with PM\(_{2.5}\) and PM\(_{10}\) having lower
+variability than NO\(_2\) and O\(_3\). Similar results were observed
+from the random intercepts \(\gamma_p\) for each station \(s\) and
+pollutant \(p\) on day \(t\). Regarding the contamination measure
+\(\rho_1\) and \(\rho_2\), both of them suggest that the contamination
+rate of the data are relatively low in our study.
+
+Posterior samples of correlations among pollutants for both hourly and
+daily pollution models are shown in Figure \ref{fig:varyingcov}, and the
+correlations between PM\(_{2.5}\) and O\(_3\), between NO\(_2\) and
+O\(_3\) for the temporal random walk effect, \(\mathbf{D}_t\), are
+different in summer and winter (the correlation between PM\(_{10}\) and
+O\(_3\) is not shown here). This speaks to the need for seasonally
+varying correlations in the air pollution model.
+
+\begin{table}[!tbp]
+{\small
+\caption{Posterior medians and 95\% credible intervals for parameters in both hourly and daily pollution models.\label{tab:pollutionModelImplementationboth}} 
+\begin{center}
+\begin{tabular}{lccccccc}
+\hline\hline
+\multicolumn{1}{l}{\bfseries }&\multicolumn{3}{c}{\bfseries Hourly model}&\multicolumn{1}{c}{\bfseries }&\multicolumn{3}{c}{\bfseries Daily model}\tabularnewline
+\cline{2-4} \cline{6-8}
+\multicolumn{1}{l}{}&\multicolumn{1}{c}{Est}&\multicolumn{1}{c}{2.5\%}&\multicolumn{1}{c}{97.5\%}&\multicolumn{1}{c}{}&\multicolumn{1}{c}{Est}&\multicolumn{1}{c}{2.5\%}&\multicolumn{1}{c}{97.5\%}\tabularnewline
+\hline
+\multicolumn{8}{l}{\bfseries Temporal: $\delta_p\propto\mbox{sd}(D_{tp})$}\tabularnewline\hline
+~~PM$_{2.5}$&$0.314$&$0.307$&$0.322$&&$0.366$&$0.354$&$0.377$\tabularnewline
+~~PM$_{10}$&$0.307$&$0.300$&$0.315$&&$0.346$&$0.335$&$0.356$\tabularnewline
+~~NO$_2$&$0.266$&$0.258$&$0.275$&&$0.250$&$0.242$&$0.258$\tabularnewline
+~~O$_3$&$0.910$&$0.640$&$1.307$&&$0.811$&$0.583$&$1.142$\tabularnewline
+\hline
+\multicolumn{8}{l}{\bfseries AR coefficient: $\phi_p$}\tabularnewline\hline
+~~PM$_{2.5}$&$0.734$&$0.714$&$0.755$&&$0.690$&$0.670$&$0.708$\tabularnewline
+~~PM$_{10}$&$0.734$&$0.713$&$0.753$&&$0.704$&$0.685$&$0.722$\tabularnewline
+~~NO$_2$&$0.756$&$0.733$&$0.777$&&$0.711$&$0.689$&$0.734$\tabularnewline
+~~O$_3$&$0.806$&$0.781$&$0.829$&&$0.746$&$0.719$&$0.769$\tabularnewline
+\hline
+\multicolumn{8}{l}{\bfseries Observations: $1/\sqrt\alpha_p=\mbox{sd}(Y_{tp})/\mbox{E}(Y_{tp})$}\tabularnewline\hline
+~~PM$_{2.5}$&$0.324$&$0.324$&$0.325$&&$0.015$&$0.010$&$0.025$\tabularnewline
+~~PM$_{10}$&$0.316$&$0.315$&$0.317$&&$0.013$&$0.008$&$0.018$\tabularnewline
+~~NO$_2$&$0.324$&$0.324$&$0.325$&&$0.022$&$0.015$&$0.036$\tabularnewline
+~~O$_3$&$0.631$&$0.630$&$0.633$&&$0.203$&$0.187$&$0.218$\tabularnewline
+\hline
+\multicolumn{8}{c}{\bfseries Hourly model}\tabularnewline 
+\hline
+\multicolumn{1}{l}{}&\multicolumn{1}{c}{Est}&\multicolumn{1}{c}{2.5\%}&\multicolumn{1}{c}{97.5\%}&\multicolumn{1}{c}{}&\multicolumn{1}{c}{Est}&\multicolumn{1}{c}{2.5\%}&\multicolumn{1}{c}{97.5\%}\tabularnewline\hline
+\multicolumn{4}{l}{\bfseries Station-level: $\kappa_p=\mbox{sd}(Q_{sp})$}&&\multicolumn{3}{l}{\bfseries Contamination $\rho_1$(\textperthousand)}\tabularnewline\hline
+~~PM$_{2.5}$&$0.070$&$0.047$&$0.111$&&$0.707$&$0.603$&$0.827$\tabularnewline
+~~PM$_{10}$&$0.090$&$0.063$&$0.148$&&$0.093$&$0.055$&$0.138$\tabularnewline
+~~NO$_2$&$0.248$&$0.168$&$0.410$&&$0.248$&$0.188$&$0.314$\tabularnewline
+~~O$_3$&$0.168$&$0.105$&$0.291$&&$0.006$&$0.000$&$0.032$\tabularnewline
+\hline
+\multicolumn{4}{l}{\bfseries Daily/Station: $\gamma_p\propto\mbox{sd}(C_{tsp})$}&&\multicolumn{3}{l}{\bfseries Contamination $\rho_2$(\textperthousand)}\tabularnewline\hline
+~~PM$_{2.5}$&$0.069$&$0.067$&$0.072$&&$2.933$&$2.727$&$3.153$\tabularnewline
+~~PM$_{10}$&$0.074$&$0.071$&$0.076$&&$0.986$&$0.866$&$1.116$\tabularnewline
+~~NO$_2$&$0.195$&$0.188$&$0.202$&&$0.044$&$0.022$&$0.078$\tabularnewline
+~~O$_3$&$0.185$&$0.132$&$0.269$&&$1.203$&$0.973$&$1.431$\tabularnewline
+\hline
+\end{tabular}\end{center}}
+\end{table}
+
+\begin{figure}[H]
+
+{\centering \subfloat[cor(${D}_{t,PM_{2.5}}, {D}_{t,O_{3}}$)\label{fig:varyingcov-1}]{\includegraphics[width=0.45\textwidth]{figure/varyingcov-1} }\subfloat[cor(${D}_{t,NO_{2}}, {D}_{t,O_{3}}$)\label{fig:varyingcov-2}]{\includegraphics[width=0.45\textwidth]{figure/varyingcov-2} }
+
+}
+
+\caption{ Posterior samples of seasonally varying correlations between O$_3$ and each of PM$_{2.5}$ and NO$_2$, from hourly pollution model (black) and daily pollution model (blue).}\label{fig:varyingcov}
+\end{figure}
+
+\hypertarget{model-prediction-performance}{%
+\subsection{Model prediction
+performance}\label{model-prediction-performance}}
+
+In this section, we analyze and compare the prediction performance of
+the hourly and daily pollution models under different scenarios,
+specifically considering the presence of missing data for one pollutant
+or two pollutants. In the first scenario, we evaluate the models'
+performance when one pollutant is missing across all stations. We
+consider four distinct cases: PM\(_{2.5}\) missing, PM\(_{10}\) missing,
+NO\(_2\) missing, and O\(_3\) missing. In the second scenario, we
+explore the models' performance when two pollutants are missing across
+all stations. This scenario encompasses six different cases, such as
+both PM\(_{2.5}\) and PM\(_{10}\) missing, both PM\(_{2.5}\) and
+NO\(_2\) missing, and so on.
+
+\begin{table}
+
+\caption{Prediction performance comparison between hourly and daily pollution models in terms of bias and root mean square error ($\mu g/m^{3}$).}\label{tab:hourlydailycomparison}
+\centering
+\begin{tabular}[h]{lllll}
+\hline\hline
+\multicolumn{1}{c}{\textbf{ }} & \multicolumn{2}{c}{\textbf{Hourly model}} & \multicolumn{2}{c}{\textbf{Daily model}} \\\hline
+Pollutant  & Bias & RMSE & Bias & RMSE\\\hline
+\multicolumn{5}{l}{\textbf{One-pollutant missing}}\\\hline
+\hspace{1em}PM$_{2.5}$ & 0.53 & 5.85 & 0.38 & 4.86\\
+\hspace{1em}PM$_{10}$ & 0.36 & 7.26 & -0.38 & 5.45\\
+\hspace{1em}NO$_{2}$  & -2.48 & 13.07 & -2.34 & 12.72\\
+\hspace{1em}O$_{3}$   & 5.83 & 30.9 & 1.57 & 24.06\\\hline
+\multicolumn{5}{l}{\textbf{Two-pollutant missing}}\\\hline
+\hspace{1em}PM$_{2.5}$ & 1.33 & 8.77 & 1.16 & 7.99\\
+\hspace{1em}PM$_{10}$ & 1.62 & 13.59 & 1.09 & 12.37\\\hline
+\hspace{1em}PM$_{2.5}$ & -0.61 & 6.37 & -1.27 & 5.12\\
+\hspace{1em}NO$_{2}$ & 0.21 & 9.28 & 1.03 & 9.03\\\hline
+\hspace{1em}PM$_{2.5}$ & -0.19 & 4.51 & -0.33 & 3.74\\
+\hspace{1em}O$_{3}$ & 5.75 & 33.68 & -2.38 & 22.14\\\hline
+\hspace{1em}PM$_{10}$ & 0.03 & 9.7 & -0.09 & 6.71\\
+\hspace{1em}NO$_{2}$ & -1.77 & 12.08 & -1.44 & 11.71\\\hline
+\hspace{1em}PM$_{10}$ & -0.19 & 8.16 & -0.98 & 5.99\\
+\hspace{1em}O$_{3}$ & 8.28 & 38.63 & 0.64 & 24.23\\\hline
+\hspace{1em}NO$_{2}$ & 1.3 & 10.82 & 0.84 & 8.78\\
+\hspace{1em}O$_{3}$ & 11.67 & 37.02 & 0.49 & 22.48\\\hline
+\end{tabular}
+\end{table}
+
+Based on the results presented in Table \ref{tab:hourlydailycomparison},
+we compare the prediction performance of the hourly and daily pollution
+models in terms of bias and root mean square error (RMSE) for different
+scenarios of missing data. In the case of one-pollutant missing, we
+observe that the hourly pollution model generally exhibits higher bias
+and RMSE compared to the daily pollution model. For PM\(_{2.5}\), both
+models show relatively low bias, but the hourly pollution model has a
+slightly higher RMSE than the daily pollution model. Similarly, for
+PM\(_{10}\), the hourly pollution model has a higher RMSE compared to
+the daily pollution model. Furthermore, for NO\(_2\), the prediction
+performance are similar for both models, but for O\(_3\), the hourly
+pollution model displays significantly higher bias and RMSE compared to
+the daily pollution model.
+
+In the second part of Table \ref{tab:hourlydailycomparison}, which
+represents the two-pollutant missing scenario, a few main findings can
+be observed. In general, the daily pollution models outperform the
+hourly pollution models in terms of bias and RMSE. The daily pollution
+models generally consistently exhibit lower bias and RMSE values
+compared to the hourly pollution models, indicating their superior
+prediction performance. When both PM\(_{2.5}\) and PM\(_{10}\) are
+missing, their prediction performance is not as good as in the
+one-pollutant missing scenario. This outcome can be attributed to the
+high correlation between PM\(_{2.5}\) and PM\(_{10}\). Since these two
+pollutants are strongly related, having information about one pollutant
+greatly aids in predicting the other. Thus, when both are missing, the
+models face increased difficulty in accurately predicting their
+concentrations. O\(_3\), being a challenging pollutant to predict
+precisely, shows higher bias and RMSE values overall. However, the daily
+pollution models perform significantly better than the hourly pollution
+models for O\(_3\). Despite the inherent difficulty in predicting
+O\(_3\) concentrations accurately, the daily pollution models
+demonstrate a noticeable improvement over the hourly pollution models,
+indicating their effectiveness in capturing O\(_3\) patterns and trends.
+
+Overall, these results indicate that the daily pollution model
+outperforms the hourly pollution model in terms of prediction accuracy
+for most scenarios of the presence of missing data. The daily pollution
+model exhibits lower bias and RMSE values, suggesting its better ability
+to capture and predict pollutant concentrations compared to the hourly
+pollution model. By incorporating these diverse scenarios into the
+analysis, we gain a comprehensive understanding of the prediction
+performance of the hourly and daily pollution models under various
+missing data situations. These results provide valuable insights into
+the strengths and limitations of the hourly and daily pollution models.
+They guide us in understanding which model is more suitable for
+different scenarios and shed light on their applicability for predicting
+pollutant concentrations accurately.
+
+Figure \ref{fig:singleMissing} displays the predicted daily pollution
+concentrations in four distinct cases of single-pollutant missing
+scenarios: PM\(_{2.5}\) missing, PM\(_{10}\) missing, NO\(_2\) missing,
+and O\(_3\) missing. The predictions are generated by both the hourly
+and daily pollution models, with the true daily mean indicated in red.
+Firstly, it is worth noting that both the hourly and daily pollution
+models exhibit good prediction performance. Despite the missing
+pollutant in each case, the models effectively capture the underlying
+patterns and trends of the pollution concentrations. This observation
+suggests that the models are able to generate reliable predictions for
+the missing pollutants. Secondly, Figure \ref{fig:singleMissing} clearly
+illustrates that the daily pollution model generally consistently
+outperforms the hourly pollution model. This is evident from the
+narrower boxplots in the daily pollution model, indicating a reduced
+spread of predicted values and ultimately resulting in lower RMSE. The
+improved performance of the daily pollution model compared to the hourly
+pollution model suggests its ability to provide more accurate and
+precise predictions regarding the daily concentrations.
+
+Similarly, Figure \ref{fig:pm25pm10missing} displays the predicted daily
+pollution concentrations in a specific case of two-pollutant missing
+scenario: both PM\(_{2.5}\) and PM\(_{10}\) missing (the results of
+other cases of two-pollutant missing scenario are presented in Appendix
+to save space). The figure also demonstrates the superior performance of
+the daily pollution model over the hourly pollution model in terms of
+reduced spread and lower RMSE. Additionally, it highlights the
+capability of both models to accurately predict pollution concentrations
+when a few observations are missing from the input data.
+
+\begin{figure}[H]
+\subfloat[Hourly model\label{fig:singleMissing-1}]{\includegraphics[width=0.49\textwidth]{figure/singleMissing-1} }\subfloat[Daily model\label{fig:singleMissing-2}]{\includegraphics[width=0.49\textwidth]{figure/singleMissing-2} }\subfloat[Hourly model\label{fig:singleMissing-3}]{\includegraphics[width=0.49\textwidth]{figure/singleMissing-3} }\subfloat[Daily model\label{fig:singleMissing-4}]{\includegraphics[width=0.49\textwidth]{figure/singleMissing-4} }\subfloat[Hourly model\label{fig:singleMissing-5}]{\includegraphics[width=0.49\textwidth]{figure/singleMissing-5} }\subfloat[Daily model\label{fig:singleMissing-6}]{\includegraphics[width=0.49\textwidth]{figure/singleMissing-6} }\subfloat[Hourly model\label{fig:singleMissing-7}]{\includegraphics[width=0.49\textwidth]{figure/singleMissing-7} }\subfloat[Daily model\label{fig:singleMissing-8}]{\includegraphics[width=0.49\textwidth]{figure/singleMissing-8} }\caption[Predicted daily pollution concentrations under four single-pollutant missing scenarios from hourly and daily pollution models, with the true daily mean being in red]{Predicted daily pollution concentrations under four single-pollutant missing scenarios from hourly and daily pollution models, with the true daily mean being in red.}\label{fig:singleMissing}
+\end{figure}
+
+\begin{figure}[H]
+\subfloat[Hourly model\label{fig:pm25pm10missing-1}]{\includegraphics[width=0.49\textwidth]{figure/pm25pm10missing-1} }\subfloat[Daily model\label{fig:pm25pm10missing-2}]{\includegraphics[width=0.49\textwidth]{figure/pm25pm10missing-2} }\subfloat[Hourly model\label{fig:pm25pm10missing-3}]{\includegraphics[width=0.49\textwidth]{figure/pm25pm10missing-3} }\subfloat[Daily model\label{fig:pm25pm10missing-4}]{\includegraphics[width=0.49\textwidth]{figure/pm25pm10missing-4} }\caption{Predicted daily PM$_{2.5}$ and PM$_{10}$ under two-pollutant missing scenario from hourly and daily pollution models, with the true daily mean being in red.}\label{fig:pm25pm10missing}
+\end{figure}
+
+\hypertarget{conclusion}{%
+\section{Conclusion}\label{conclusion}}
+
+When investigating the health impacts of short-term air pollution, it is
+common to analyze the relationship between disease cases and air
+pollution concentrations over the preceding days. Epidemiological
+studies consistently demonstrate a correlation between daily pollution
+exposure and disease outcomes. In order to estimate daily exposure,
+researchers often aggregate hourly pollution data. However, when dealing
+with missing hourly data, some researchers have developed models to fill
+these gaps, enabling the estimation of daily exposure through the
+aggregation of complete hourly data.
+
+Given the focus on estimating daily exposure rather than solely relying
+on hourly data, an alternative approach arises: directly modelling daily
+exposure instead of hourly data.
+
+In our study, we conducted a comparison between hourly and daily
+pollution modelling strategies to assess their performance in estimating
+daily pollution exposure. Our objective was to improve the efficiency of
+pollution exposure estimation in epidemiological studies. We
+hypothesized that daily pollution modelling could produce comparable
+results to hourly pollution modelling while reducing model complexity
+and computation time. By analyzing data from Guangzhou city and
+considering various scenarios of missing data, we obtained valuable
+insights into the strengths and limitations of both modelling
+approaches.
+
+Specifically, we analyze and compare the prediction performance of the
+hourly and daily pollution models under different scenarios: the
+presence of missing data for one pollutant or two pollutants. In the
+first scenario, we evaluate the models' performance when one pollutant
+is missing across all stations. We consider four distinct cases:
+PM\(_{2.5}\) missing, PM\(_{10}\) missing, NO\(_2\) missing, and O\(_3\)
+missing. In the second scenario, we explore the models' performance when
+two pollutants are missing across all stations. This scenario
+encompasses six different cases, such as both PM\(_{2.5}\) and
+PM\(_{10}\) missing, both PM\(_{2.5}\) and NO\(_2\) missing, and so on.
+
+Our results clearly demonstrate that the daily pollution modelling
+strategy outperforms the hourly pollution modelling strategy in terms of
+prediction accuracy for most scenarios of the presence of missing data.
+The daily pollution models consistently exhibit lower bias and RMSE
+values compared to the hourly pollution models, indicating their
+superior ability to capture and predict pollutant concentrations. These
+findings support the hypothesis that daily pollution modelling can
+provide comparable results to hourly pollution modelling while offering
+computational advantages. These findings can guide researchers in
+selecting the most suitable modelling approach for estimating pollution
+exposure in epidemiological studies. By opting for daily pollution
+modelling, researchers can achieve comparable results to hourly
+pollution modelling while benefiting from reduced computational burden.
+Future studies can further explore and refine the daily pollution
+modelling strategy to enhance its performance and applicability in
+pollution exposure estimation.
+
+The code and data used for this study are publicly shared on GitHub
+(\url{https://github.com/hgw0610209/hourlydailymodelcomparison}),
+allowing for transparency, reproducibility, and collaboration. By making
+the code and data openly accessible, other researchers and interested
+individuals can examine the methodology, replicate the results, and
+build upon the findings. This promotes the advancement of scientific
+knowledge and fosters a collaborative research environment.
+Additionally, the availability of the code and data encourages the
+adoption of best practices, facilitates benchmarking against existing
+methods, and supports the development of novel approaches in the field.
+
+\hypertarget{appendix}{%
+\section*{Appendix}\label{appendix}}
+\addcontentsline{toc}{section}{Appendix}
+
+The predicted daily pollution concentrations in other cases of
+two-pollutant missing scenario are presented in Figure
+\ref{fig:pm25no2missing}, \ref{fig:pm25o3missing},
+\ref{fig:pm10no2missing}, \ref{fig:pm10o3missing},
+\ref{fig:no2o3missing}. The figures demonstrate the superior performance
+of the daily pollution model over the hourly pollution model in terms of
+reduced spread and lower RMSE.
+
+\begin{figure}[H]
+\subfloat[Hourly model\label{fig:pm25no2missing-1}]{\includegraphics[width=0.49\textwidth]{figure/pm25no2missing-1} }\subfloat[Daily model\label{fig:pm25no2missing-2}]{\includegraphics[width=0.49\textwidth]{figure/pm25no2missing-2} }\subfloat[Hourly model\label{fig:pm25no2missing-3}]{\includegraphics[width=0.49\textwidth]{figure/pm25no2missing-3} }\subfloat[Daily model\label{fig:pm25no2missing-4}]{\includegraphics[width=0.49\textwidth]{figure/pm25no2missing-4} }\caption{Predicted daily PM$_{2.5}$ and NO$_{2}$ under two-pollutant missing scenario from hourly and daily pollution models, with the true daily mean being in red.}\label{fig:pm25no2missing}
+\end{figure}
+
+\begin{figure}[H]
+\subfloat[Hourly model\label{fig:pm25o3missing-1}]{\includegraphics[width=0.49\textwidth]{figure/pm25o3missing-1} }\subfloat[Daily model\label{fig:pm25o3missing-2}]{\includegraphics[width=0.49\textwidth]{figure/pm25o3missing-2} }\subfloat[Hourly model\label{fig:pm25o3missing-3}]{\includegraphics[width=0.49\textwidth]{figure/pm25o3missing-3} }\subfloat[Daily model\label{fig:pm25o3missing-4}]{\includegraphics[width=0.49\textwidth]{figure/pm25o3missing-4} }\caption{Predicted daily PM$_{2.5}$ and O$_{3}$ under two-pollutant missing scenario from hourly and daily pollution models, with the true daily mean being in red.}\label{fig:pm25o3missing}
+\end{figure}
+
+\begin{figure}[H]
+\subfloat[Hourly model\label{fig:pm10no2missing-1}]{\includegraphics[width=0.49\textwidth]{figure/pm10no2missing-1} }\subfloat[Daily model\label{fig:pm10no2missing-2}]{\includegraphics[width=0.49\textwidth]{figure/pm10no2missing-2} }\subfloat[Hourly model\label{fig:pm10no2missing-3}]{\includegraphics[width=0.49\textwidth]{figure/pm10no2missing-3} }\subfloat[Daily model\label{fig:pm10no2missing-4}]{\includegraphics[width=0.49\textwidth]{figure/pm10no2missing-4} }\caption[Predicted daily PM$_{10}$ and NO$_{2}$ under two-pollutant missing scenario from hourly and daily pollution models, with the true daily mean being in red]{Predicted daily PM$_{10}$ and NO$_{2}$ under two-pollutant missing scenario from hourly and daily pollution models, with the true daily mean being in red.}\label{fig:pm10no2missing}
+\end{figure}
+
+\begin{figure}[H]
+\subfloat[Hourly model\label{fig:pm10o3missing-1}]{\includegraphics[width=0.49\textwidth]{figure/pm10o3missing-1} }\subfloat[Daily model\label{fig:pm10o3missing-2}]{\includegraphics[width=0.49\textwidth]{figure/pm10o3missing-2} }\subfloat[Hourly model\label{fig:pm10o3missing-3}]{\includegraphics[width=0.49\textwidth]{figure/pm10o3missing-3} }\subfloat[Daily model\label{fig:pm10o3missing-4}]{\includegraphics[width=0.49\textwidth]{figure/pm10o3missing-4} }\caption[Predicted daily PM$_{10}$ and O$_{3}$ under two-pollutant missing scenario from hourly and daily pollution models, with the true daily mean being in red]{Predicted daily PM$_{10}$ and O$_{3}$ under two-pollutant missing scenario from hourly and daily pollution models, with the true daily mean being in red.}\label{fig:pm10o3missing}
+\end{figure}
+
+\begin{figure}[H]
+\subfloat[Hourly model\label{fig:no2o3missing-1}]{\includegraphics[width=0.49\textwidth]{figure/no2o3missing-1} }\subfloat[Daily model\label{fig:no2o3missing-2}]{\includegraphics[width=0.49\textwidth]{figure/no2o3missing-2} }\subfloat[Hourly model\label{fig:no2o3missing-3}]{\includegraphics[width=0.49\textwidth]{figure/no2o3missing-3} }\subfloat[Daily model\label{fig:no2o3missing-4}]{\includegraphics[width=0.49\textwidth]{figure/no2o3missing-4} }\caption[Predicted daily NO$_{2}$ and O$_{3}$ under two-pollutant missing scenario from hourly and daily pollution models, with the true daily mean being in red]{Predicted daily NO$_{2}$ and O$_{3}$ under two-pollutant missing scenario from hourly and daily pollution models, with the true daily mean being in red.}\label{fig:no2o3missing}
+\end{figure}
+
+\printbibliography[title=References]
+
+\end{document}
