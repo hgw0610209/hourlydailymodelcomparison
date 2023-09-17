@@ -37,7 +37,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \hypersetup{
-  pdftitle={Hourly vs.~Daily Pollution Modelling Strategies in Epidemiological Studies: Evaluating the Performance for Estimating Daily Pollution Exposure},
+  pdftitle={Missing Data Imputation Strategies: A Comparative Analysis of Hourly and Daily Pollution Models},
   pdfauthor={Guowen Huang},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
@@ -76,9 +76,7 @@
 false]{biblatex}
 \addbibresource{thebib.bib}
 
-\title{Hourly vs.~Daily Pollution Modelling Strategies in
-Epidemiological Studies\(:\) Evaluating the Performance for Estimating
-Daily Pollution Exposure}
+\title{Missing Data Imputation Strategies\(:\) A Comparative Analysis of Hourly and Daily Pollution Models}
 \author{Guowen Huang}
 \date{}
 
@@ -95,7 +93,7 @@ Epidemiological studies have consistently demonstrated the association
 between daily pollution exposure and disease outcomes. To estimate daily
 exposure, hourly pollution data are commonly aggregated, but missing
 data pose a significant challenge to this approach. To overcome this
-issue, some researchers develop models to impute missing hourly data.
+issue, some researchers have developed various models to impute missing hourly data.
 Alternatively, directly modelling pollution exposure on a daily basis is
 possible, thereby avoiding the computational burden of hourly pollution
 modelling. However, the performance of these two modelling strategies
@@ -105,9 +103,7 @@ daily pollution exposure. Utilizing data derived from Guangzhou city,
 the analysis encompasses diverse scenarios of data absence. The outcomes
 consistently highlight the superior performance of daily pollution
 models in terms of mitigated bias and diminished root mean square error
-(RMSE) values. These findings can guide researchers in selecting the
-most suitable modelling approach for estimating pollution exposure in
-epidemiological studies.
+(RMSE) values. 
 
 \hypertarget{keywords}{%
 \subsection*{Keywords}\label{keywords}}
@@ -165,7 +161,7 @@ risks for non-accidental, cardiovascular, and respiratory mortality.
 While estimating short-term air pollution effects, daily counts of
 disease cases are often regressed against daily air pollution
 concentrations on the preceding few days, utilizing either an ecological
-(at the population level) time series design \autocites[see
+(at the population level) time-series design \autocites[see
 e.g.,][]{Zhou2021,Krall2013,Gouveia2000} or a case-crossover design
 \autocites[see
 e.g.,][]{Blangiardo2023,Lavigne2022,Liu2019,Di2017,Wing2017}. However,
@@ -848,9 +844,7 @@ consistently exhibit lower bias and RMSE values compared to the hourly
 pollution models, indicating their superior ability to capture and
 predict pollutant concentrations. These findings support the hypothesis
 that daily pollution modelling can provide comparable results to hourly
-pollution modelling while offering computational advantages. These
-findings can guide researchers in selecting the most suitable modelling
-approach for estimating pollution exposure in epidemiological studies.
+pollution modelling while offering computational advantages. 
 
 Why the daily data modelling outperforms the hourly data modelling?
 There are several probable explanations for why directly predicting
